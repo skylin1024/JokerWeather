@@ -1,5 +1,6 @@
 package com.jokerweather.android.ui.place
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jokerweather.android.databinding.FragmentPlaceBinding
+import com.jokerweather.android.logic.network.WeatherServiceCreator
+import com.jokerweather.android.ui.weather.WeatherActivity
 
 class PlaceFragment:Fragment(){
     //lazy函数这种懒加载技术来获取PlaceViewModel的实例
-    private val viewModel by lazy {
+    val viewModel by lazy {
         ViewModelProvider(this)[PlaceViewModel::class.java]
     }
     private lateinit var adapter: PlaceAdapter
@@ -32,6 +35,21 @@ class PlaceFragment:Fragment(){
     }
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+//        如果当前已有存储的城市数据，那么就获取已存储的数
+//        据并解析成Place对象，然后使用它的经纬度坐标和城市名直接跳转并传递给
+//        WeatherActivity，这样用户就不需要每次都重新搜索并选择城市了。
+        if(viewModel.isPlaceSaved()){
+            val place = viewModel.getSavedPlace()
+            val intent = Intent(context,WeatherActivity::class.java).apply {
+                putExtra("location_lon", place.lon)
+                putExtra("location_lat", place.lat)
+                putExtra("place_name", place.name)
+            }
+            startActivity(intent)
+            activity?.finish()
+            return
+        }
+
         val layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.layoutManager = layoutManager
         adapter = PlaceAdapter(this,viewModel.placeList)

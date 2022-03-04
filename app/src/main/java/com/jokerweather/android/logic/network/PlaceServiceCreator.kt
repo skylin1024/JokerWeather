@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 /**
  * Retrofit构建器
  */
-object ServiceCreator {
+object PlaceServiceCreator {
     private const val BASE_URL = "https://geoapi.qweather.com/"
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
