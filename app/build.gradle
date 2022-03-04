@@ -49,7 +49,7 @@ dependencies {
     // Annotation processor
     kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     implementation 'com.google.android.material:material:1.5.0'
-    //Implement the swipe-to-refresh UI pattern.
+    //下拉刷新
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'

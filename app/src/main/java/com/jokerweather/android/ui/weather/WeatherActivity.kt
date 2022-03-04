@@ -1,18 +1,21 @@
 package com.jokerweather.android.ui.weather
 
-import android.app.Activity
+
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.GravityCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import com.jokerweather.android.R
 import com.jokerweather.android.databinding.ActivityWeatherBinding
@@ -23,7 +26,7 @@ import java.util.*
 
 class WeatherActivity : AppCompatActivity() {
     val viewModel by lazy { ViewModelProvider(this)[WeatherViewModel::class.java] }
-    private lateinit var binding: ActivityWeatherBinding
+    lateinit var binding: ActivityWeatherBinding
 
     companion object {
         const val DAYS = 7
@@ -38,10 +41,12 @@ class WeatherActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             //隐藏状态栏
             WindowCompat.setDecorFitsSystemWindows(window, false)
-            WindowInsetsControllerCompat(window,binding.root).let { controller ->
+            WindowInsetsControllerCompat(window, binding.root).let { controller ->
                 controller.hide(WindowInsetsCompat.Type.systemBars())
-                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                controller.systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
+            window.statusBarColor = Color.TRANSPARENT
         } else {
             //我们调用了getWindow().getDecorView()方法拿到当前Activity的DecorView，
             //再调用它的setSystemUiVisibility()方法来改变系统UI的显示，这里传入
@@ -52,7 +57,7 @@ class WeatherActivity : AppCompatActivity() {
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             window.statusBarColor = Color.TRANSPARENT
         }
-
+        //接收经纬度及地名数据
         if (viewModel.locationLon.isEmpty()) {
             viewModel.locationLon = intent.getStringExtra("location_lon") ?: ""
         }
@@ -62,6 +67,30 @@ class WeatherActivity : AppCompatActivity() {
         if (viewModel.placeName.isEmpty()) {
             viewModel.placeName = intent.getStringExtra("place_name") ?: ""
         }
+        //第一，在切换城市按钮的点击事件中调用DrawerLayout的openDrawer()方法来打开滑动菜单；
+        //第二，监听DrawerLayout的状态，当滑动菜单被隐藏的时候，同时也要隐藏输入法。
+        binding.now.navBtn.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                manager.hideSoftInputFromWindow(drawerView.windowToken,InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+
+            }
+
+        })
+
         viewModel.weatherLiveData.observe(this, { result ->
             val weather = result.getOrNull()
             if (weather != null) {
@@ -70,10 +99,15 @@ class WeatherActivity : AppCompatActivity() {
                 Toast.makeText(this, "无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+            //刷新事件结束隐藏进度条
+            binding.swipeRefresh.isRefreshing = false
         })
-        Log.d("WeatherActivity", viewModel.locationLon)
-        Log.d("WeatherActivity", viewModel.locationLat)
-        viewModel.refreshWeather(viewModel.locationLon, viewModel.locationLat)
+        binding.swipeRefresh.setColorSchemeResources(R.color.purple_500)
+        refreshWeather()
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshWeather()
+        }
+
     }
 
     private fun showWeatherInfo(weather: Weather) {
@@ -120,6 +154,15 @@ class WeatherActivity : AppCompatActivity() {
         binding.lifeIndex.ultravioletText.text = indicesNow[1].category
         binding.lifeIndex.carWashingText.text = indicesNow[0].category
         binding.weatherLayout.visibility = View.VISIBLE
+    }
+
+    /**
+     * 刷新天气
+     */
+    fun refreshWeather() {
+        viewModel.refreshWeather(viewModel.locationLon, viewModel.locationLat)
+        //显示下拉进度条
+        binding.swipeRefresh.isRefreshing = true
     }
 
 }

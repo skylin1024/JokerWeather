@@ -10,6 +10,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.jokerweather.android.MainActivity
 import com.jokerweather.android.databinding.FragmentPlaceBinding
 import com.jokerweather.android.logic.network.WeatherServiceCreator
 import com.jokerweather.android.ui.weather.WeatherActivity
@@ -38,7 +39,9 @@ class PlaceFragment:Fragment(){
 //        如果当前已有存储的城市数据，那么就获取已存储的数
 //        据并解析成Place对象，然后使用它的经纬度坐标和城市名直接跳转并传递给
 //        WeatherActivity，这样用户就不需要每次都重新搜索并选择城市了。
-        if(viewModel.isPlaceSaved()){
+        //只有当PlaceFragment被嵌入MainActivity中，
+        //并且之前已经存在选中的城市，此时才会直接跳转到WeatherActivity
+        if(viewModel.isPlaceSaved() && activity is MainActivity){
             val place = viewModel.getSavedPlace()
             val intent = Intent(context,WeatherActivity::class.java).apply {
                 putExtra("location_lon", place.lon)

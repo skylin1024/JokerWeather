@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--当前天气布局-->
-<!--android:fitsSystemWindows="true"系统状态栏留出空间-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/nowLayout"
-    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="530dp"
     android:orientation="vertical">
@@ -11,10 +9,20 @@
     上半部分是头布局，里面只放置了一个TextView，用于显示城市名；
     下半部分是当前天气信息的布局，里面放置了几个TextView，分别用于显示当前气温、当前天气情况以及当前空气质量。
     -->
+    <!--android:fitsSystemWindows="true"系统状态栏留出空间-->
     <FrameLayout
         android:id="@+id/titleLayout"
         android:layout_width="match_parent"
+        android:fitsSystemWindows="true"
         android:layout_height="70dp">
+        <!--切换城市-->
+        <Button
+            android:id="@+id/navBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="15dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/ic_home" />
         <TextView
             android:id="@+id/placeName"
             android:layout_width="wrap_content"
